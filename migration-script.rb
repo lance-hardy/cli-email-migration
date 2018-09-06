@@ -17,7 +17,8 @@ custom_config_results = []
 # loop through each app in the migration list where we will look for custom cls configs
 app_migration_list.each do |app|
 
-  # GET the json output from cls app api endpoint
+  # GET the json output from cls app api endpoint. It will include client_urn, form (if custom config), location_urn (if custom config),
+  # category, field and value
   json_output = HTTParty.get("https://#{app}.herokuapp.com/api/v1/configurable_attributes")
 
   # gather all relevant configured attributes for app
