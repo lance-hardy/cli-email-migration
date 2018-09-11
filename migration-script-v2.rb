@@ -27,4 +27,58 @@ configs_array = []
 ## 4) replace all configurable attributes with json output from api
 
 # Matt Bohme is tasked with deleting client data from email service
-# should the delete and insert task be syncrhonous 
+# should the delete and insert task be syncrhonous
+
+# overrides_controller contains both delete and create functions - use as guideline
+# there is no api currently which displays overrides
+
+def destroy
+  @override_target.destroy
+  flash[:notice] = 'Successfully deleted Override'
+  respond_with @override_target, location: overrides_path
+end
+
+def update
+  if @override_target.update_attributes(override_target_params)
+    flash[:notice] = 'Successfully updated Override'
+  else
+    @override_target.set_all_overrides
+  end
+  respond_with @override_target, location: overrides_path(client_urn: client_urn)
+end
+
+def new
+  @override_target.set_all_overrides
+end
+
+def create
+  @override_target = OverrideTarget.new(override_target_params)
+  if @override_target.save
+    flash[:notice] = 'Successfully created Override'
+  else
+    @override_target.set_all_overrides
+  end
+  respond_with @override_target, location: overrides_path(client_urn: client_urn)
+end
+
+private
+def load_target
+  @override_target = OverrideTarget.find(params[:override_target_id])
+end
+
+def model_client_urn
+  @override_target.try(:client_urn)
+end
+
+def override_target_params
+  return {} unless params[:override_target].present?
+  params.require(:override_target).permit(:id, :client_urn, :location_urn, :cls_form_type_id, :email_type_id, overrides_attributes: [:id, :field, :value])
+end
+
+def load_new_target
+  @override_target = if params[:clone_override_target_id]
+                       OverrideTarget.find(params[:clone_override_target_id]).clone_override_target
+                     else
+                       OverrideTarget.new(client_urn: client_urn)
+                     end
+end
